@@ -1,0 +1,134 @@
+* [English version](./README.md)
+# WeActStudio.USB2CANFDV2
+![display](Images/1.png)
+STM32G431CBT6  
+> 170Mhz Max,32KB RAM,128KB ROM
+
+CANFD/CAN2.0  
+> 2500V隔离, 速率最大5Mbps，支持cangaroo或二次开发，收发器型号：CA-IS2062A&Chipanalog
+
+连接器  
+> 3.81mm 1x3P WJ15EDGK-3.81-3P
+
+## 固件说明
+**SLCAN 固件(usb cdc)**
+> 支持[cangaroo](https://github.com/WeActStudio/cangaroo)。源码见 [WeActStudio.USB2CANFDV2.SLCAN_Firmware](https://github.com/WeActStudio/WeActStudio.USB2CANFDV2.SLCAN_Firmware.git)
+
+**Candlelight2.5 固件(gs_usb)**
+> 支持[HUD-ECU-Hacker](https://netcult.ch/elmue/HUD%20ECU%20Hacker/)。源码见 [CANable-2.5-firmware-Slcan-and-Candlelight](https://github.com/WeActStudio/CANable-2.5-firmware-Slcan-and-Candlelight.git)
+
+## SLCAN协议说明
+> 请升级到最新的固件版本以支持更多的波特率
+
+> 采用虚拟串口，命令如下:
+- `O[CR]` - 打开CAN通道
+- `C[CR]` - 关闭CAN通道
+- `S0[CR]` - 设置标称位比特率为 10k
+- `S1[CR]` - 设置标称位比特率为 20k
+- `S2[CR]` - 设置标称位比特率为 50k
+- `S3[CR]` - 设置标称位比特率为 100k
+- `S4[CR]` - 设置标称位比特率为 125k (默认)
+- `S5[CR]` - 设置标称位比特率为 250k
+- `S6[CR]` - 设置标称位比特率为 500k
+- `S7[CR]` - 设置标称位比特率为 800k
+- `S8[CR]` - 设置标称位比特率为 1M
+- `S9[CR]` - 设置标称位比特率为 83.3k
+- `SA[CR]` - 设置标称位比特率为 75k
+- `SB[CR]` - 设置标称位比特率为 62.5k
+- `SC[CR]` - 设置标称位比特率为 33.3k
+- `SD[CR]` - 设置标称位比特率为 5k
+- `Sxxyy[CR]` - 自定义标称位比特率 (60/2=30Mhz CAN时钟) [xx=seg1(hex,0x02\~0xff), yy=seg2(hex,0x02\~0x80)]
+- `Sddxxyy[CR]` - 自定义标称位比特率 ([60/div]Mhz CAN时钟) [dd=div(hex,0x01\~0xff), xx=seg1(hex,0x02\~0xff), yy=seg2(hex,0x02\~0x80)]
+- `Y1[CR]` - 设置CANFD数据段比特率为 1M
+- `Y2[CR]` - 设置CANFD数据段比特率为 2M (默认)
+- `Y3[CR]` - 设置CANFD数据段比特率为 3M
+- `Y4[CR]` - 设置CANFD数据段比特率为 4M
+- `Y5[CR]` - 设置CANFD数据段比特率为 5M
+- `Yxxyy[CR]` - 自定义CANFD数据段比特率 (60Mhz CAN时钟) [xx=seg1(hex,0x01\~0x20), yy=seg2(hex,0x01\~0x10)]
+- `Yddxxyy[CR]` - 自定义CANFD数据段比特率 ([60/div]Mhz CAN时钟) [dd=div(hex,0x01\~0x20), xx=seg1(hex,0x01\~0x20), yy=seg2(hex,0x01\~0x10)]
+- `M0[CR]` - 设置为正常模式 (默认)
+- `M1[CR]` - 设置为监听模式
+- `A0[CR]` - 关闭自动重发 (默认)
+- `A1[CR]` - 使能自动重发 (不推荐，概率死机) 
+- `tIIILDD...[CR]` - 传输数据帧 (标准ID) [ID, length, data]
+- `TIIIIIIIILDD...[CR]` - 传输数据帧 (扩展ID) [ID, length, data]
+- `rIIIL[CR]` - 传输远程帧 (标准ID) [ID, length]
+- `RIIIIIIIIL[CR]` - 传输远程帧 (扩展ID) [ID, length]
+- `dIIILDD...[CR]` - 传输 CANFD 标准帧 (不使能 BRS) [ID, length, data]
+- `DIIIIIIIILDD...[CR]` - 传输 CANFD 扩展帧 (不使能 BRS) [ID, length, data]
+- `bIIILDD...[CR]` - 传输 CANFD 标准帧 (使能 BRS) [ID, length, data]
+- `BIIIIIIIILDD...[CR]` - 传输 CANFD 扩展帧 (使能 BRS) [ID, length, data]
+- `0x80 + t, uint8_t length , uint16_t ID, uint8_t DLC, uint8_t *D...` - 传输数据帧 (标准ID) [length, ID, DLC, Data] 增强模式, length=ID+DLC+Data
+- `0x80 + T, uint8_t length , uint32_t ID, uint8_t DLC, uint8_t *D...` - 传输数据帧 (扩展ID) [length, ID, DLC, Data] 增强模式, length=ID+DLC+Data
+- `0x80 + r, uint8_t length , uint16_t ID, uint8_t DLC` - 传输远程帧 (标准ID) [length, ID, DLC] 增强模式, length=ID+DLC
+- `0x80 + R, uint8_t length , uint32_t ID, uint8_t DLC` - 传输远程帧 (扩展ID) [length, ID, DLC] 增强模式, length=ID+DLC
+- `0x80 + d, uint8_t length , uint16_t ID, uint8_t DLC, uint8_t *D...` - 传输 CANFD 标准帧 (不使能 BRS) [length, ID, DLC, Data] 增强模式, length=ID+DLC+Data
+- `0x80 + D, uint8_t length , uint32_t ID, uint8_t DLC, uint8_t *D...` - 传输 CANFD 扩展帧 (不使能 BRS) [length, ID, DLC, Data] 增强模式, length=ID+DLC+Data
+- `0x80 + b, uint8_t length , uint16_t ID, uint8_t DLC, uint8_t *D...` - 传输 CANFD 标准帧 (使能 BRS) [length, ID, DLC, Data] 增强模式, length=ID+DLC+Data
+- `0x80 + B, uint8_t length , uint32_t ID, uint8_t DLC, uint8_t *D...` - 传输 CANFD 扩展帧 (使能 BRS) [length, ID, DLC, Data] 增强模式, length=ID+DLC+Data
+- `V[CR]` - 读取固件版本
+- `E[CR]` - 读取故障状态
+- `X[CR]` - 进入固件升级模式
+- `H0[CR]` - 关闭SLCAN增强模式, 需要关闭CAN通道 (默认)
+- `H1[CR]` - 开启SLCAN增强模式, 需要关闭CAN通道
+- `fIIIMMM[CR]` - 设置标准ID过滤, 需要关闭CAN通道 [ID, mask] (默认: 0,0)
+- `FIIIIIIIIMMMMMMMM[CR]` - 设置扩展ID过滤, 需要关闭CAN通道 [ID, mask] (默认: 0,0)
+
+`[CR]` : `0x0D` (hex), `\r` (ascii)
+
+**命令发送后返回状态说明**  
+- [CR]：发送成功  
+- 0x07: 发送失败
+
+**注意**  
+CANFD 报文长度定义如下（ASCII 字符表示，例如：`A`）（uint8_t DLC 为十六进制，例如：`0x0A`）：
+- `0-8`: 与标准CAN相同
+- `9`: 长度 = 12
+- `A`: 长度 = 16
+- `B`: 长度 = 20
+- `C`: 长度 = 24
+- `D`: 长度 = 32
+- `E`: 长度 = 48
+- `F`: 长度 = 64
+
+**上位机见Tools/cangaroo**  
+**自定义比特率设置值计算说明文档位于`Doc/CAN Bitrate Calculate_波特率计算.xlsx`**
+
+## 管脚说明
+|管脚|定义|说明|
+| :--:|:--:|:--:|
+|PA0|LED_RXD|接收指示灯，有数据时闪烁|
+|PA1|LED_TXD|发送指示灯，有数据时闪烁|
+|PA2|LED_READY|状态指示灯，CAN端口打开时0.5S闪烁(SLCAN固件)|
+|PB9|FDCAN1_TX|FDCAN1发送|
+|PB8|FDCAN1_RX|FDCAN1接收|
+|PB7|FDCAN1_RX_EN|FDCAN1接收使能，低电平使能|
+|PA12|USB_DP|USB 2.0 12Mbps|
+|PA11|USB_DM|USB 2.0 12Mbps|
+|PF0|OSC_IN|16Mhz XTAL|
+|PF1|OSC_OUT|16Mhz XTAL|
+
+## 如何烧录固件
+1. 按住`BOOT0`按键后使用数据线连接电脑
+2. 打开`STM32CubeProgrammer`工具，选择USB连接
+3. 拖入固件，点击下载按钮
+4. 下载完成后重新上电即可
+
+## 目录说明
+|目录名称|内容|
+| :--:|:--:|
+|Doc|数据手册|
+|Hardware| 硬件开发资料|
+|Examples|软件例程|
+|Tools|工具|
+
+```
+/*---------------------------------------
+- WeAct Studio Official Link
+- taobao: weactstudio.taobao.com
+- aliexpress: weactstudio.aliexpress.com
+- github: github.com/WeActStudio
+- gitee: gitee.com/WeAct-TC
+- blog: www.weact-tc.cn
+---------------------------------------*/
+```
